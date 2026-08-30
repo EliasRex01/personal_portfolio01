@@ -1,0 +1,765 @@
+/* ==========================================================================
+   DESIGN TOKENS
+   Every color, font, spacing and timing value used across the site lives
+   here as a CSS custom property. Change a value once, it updates everywhere.
+   ========================================================================== */
+:root {
+  /* --- Color palette ---------------------------------------------------- */
+  --color-bg:          #08080c;   /* near-black, slightly blue-tinted */
+  --color-bg-alt:      #0e0e15;   /* secondary background for section banding */
+  --color-surface:     #14141d;   /* card / form surfaces */
+  --color-surface-2:   #1b1b26;   /* raised surface (hover states) */
+  --color-border:      rgba(255, 255, 255, 0.08);
+
+  --color-text:        #f1f1f4;   /* primary text, off-white (not pure white) */
+  --color-text-dim:    #9797a6;   /* secondary / muted text */
+  --color-text-faint:  #5c5c6b;   /* tertiary text, captions */
+
+  --color-violet:      #8b5cf6;   /* primary accent */
+  --color-violet-glow: rgba(139, 92, 246, 0.45);
+  --color-cyan:        #22d3ee;   /* secondary accent */
+  --color-cyan-glow:   rgba(34, 211, 238, 0.4);
+  --color-gold:        #f5c451;   /* rare accent, reserved for CTAs */
+  --color-gold-glow:   rgba(245, 196, 81, 0.5);
+
+  /* --- Typography --------------------------------------------------------
+     display : headlines & big statements
+     body    : paragraphs & UI copy
+     mono    : labels, tags, eyebrows — gives a "code editor" texture      */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* --- Layout ------------------------------------------------------------ */
+  --max-width: 1200px;
+  --section-padding: clamp(5rem, 10vw, 9rem);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+
+  /* --- Motion -------------------------------------------------------------
+     A single easing curve used everywhere keeps motion feeling cohesive. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.2s var(--ease-out);
+  --transition-med:  0.4s var(--ease-out);
+  --transition-slow: 0.8s var(--ease-out);
+}
+
+/* ==========================================================================
+   RESET & BASE
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;   /* native smooth scroll for anchor links */
+  scroll-padding-top: 80px;  /* offsets the fixed navbar height */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: none; /* native cursor is hidden; our custom cursor replaces it */
+}
+
+/* Custom cursor is a desktop-only flourish. On touch devices (no fine
+   pointer) we restore the native cursor and never show our custom one. */
+@media (hover: none), (pointer: coarse) {
+  body { cursor: auto; }
+  .cursor-dot, .cursor-outline { display: none; }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul { list-style: none; }
+
+img { max-width: 100%; display: block; }
+
+::selection {
+  background: var(--color-violet);
+  color: #fff;
+}
+
+/* Respect users who've asked for less motion at the OS level */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   SHARED UTILITIES
+   ========================================================================== */
+.text-gradient {
+  background: linear-gradient(100deg, var(--color-violet), var(--color-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section-header {
+  max-width: var(--max-width);
+  margin: 0 auto 3.5rem;
+  padding: 0 2rem;
+}
+
+.section-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--color-cyan);
+  margin-bottom: 0.75rem;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Reveal-on-scroll: elements start slightly lower + transparent, then
+   script.js toggles the .in-view class once they enter the viewport. */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+}
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   CUSTOM CURSOR
+   .cursor-dot   -> snaps to the pointer instantly (set directly in JS)
+   .cursor-outline -> lags behind with a spring effect (lerped in JS), and
+                      grows/glows when hovering an interactive [data-hover] el
+   ========================================================================== */
+.cursor-dot,
+.cursor-outline {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none; /* never intercepts real clicks */
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-cyan);
+  box-shadow: 0 0 8px var(--color-cyan-glow);
+}
+
+.cursor-outline {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--color-violet);
+  background: transparent;
+  transition: width var(--transition-fast), height var(--transition-fast),
+              border-color var(--transition-fast), background var(--transition-fast);
+}
+
+/* Applied via JS when the pointer is over any [data-hover] element */
+.cursor-outline.is-active {
+  width: 60px;
+  height: 60px;
+  background: var(--color-violet-glow);
+  border-color: var(--color-cyan);
+}
+
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  padding: 1.5rem 0;
+  transition: background var(--transition-med), padding var(--transition-med),
+              border-color var(--transition-med), backdrop-filter var(--transition-med);
+  border-bottom: 1px solid transparent;
+}
+
+/* Toggled by script.js once the user scrolls past a threshold */
+.navbar.scrolled {
+  padding: 1rem 0;
+  background: rgba(8, 8, 12, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.nav-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.nav-logo span { color: var(--color-cyan); }
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.nav-link {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  transition: color var(--transition-fast);
+}
+
+/* Animated underline that grows from the center on hover */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-violet), var(--color-cyan));
+  transform: scaleX(0);
+  transition: transform var(--transition-fast);
+}
+.nav-link:hover {
+  color: var(--color-text);
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-toggle {
+  display: none; /* shown only on small screens, see media query below */
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.nav-toggle span {
+  width: 22px;
+  height: 2px;
+  background: var(--color-text);
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+/* "X" morph animation, triggered by .is-open added in script.js */
+.nav-toggle.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+.nav-toggle.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 2rem;
+}
+
+/* Canvas sits behind everything, full-bleed */
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* A faint radial vignette + fixed grid line pattern layered above the
+   canvas particles — pure CSS, no images — to reinforce the "3D floor"
+   illusion and darken the edges so text stays legible. */
+.hero-grid-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 0%, var(--color-bg) 85%),
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 100% 100%, 64px 64px, 64px 64px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 75%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 75%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 780px;
+  text-align: center;
+}
+
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  color: var(--color-cyan);
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  color: var(--color-text-dim);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  max-width: 560px;
+  margin: 0 auto 2.5rem;
+}
+
+/* --- Primary CTA button --------------------------------------------------
+   A pulsing glow ring behind the button, driven by the `pulse-glow`
+   keyframes, plus a stronger glow burst on hover/focus.                  */
+.btn-glow {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-bg);
+  background: linear-gradient(100deg, var(--color-gold), #f7d878);
+  padding: 1rem 2.4rem;
+  border: none;
+  border-radius: 999px;
+  cursor: none;
+  isolation: isolate;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 0 0 0 var(--color-gold-glow);
+  animation: pulse-glow 2.8s ease-in-out infinite;
+}
+.btn-glow:hover,
+.btn-glow:focus-visible {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 40px 6px var(--color-gold-glow);
+}
+.btn-glow:active { transform: translateY(-1px) scale(0.99); }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-gold-glow); }
+  50%      { box-shadow: 0 0 28px 4px var(--color-gold-glow); }
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.scroll-indicator span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+}
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+.scroll-line i {
+  display: block;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(var(--color-cyan), transparent);
+  animation: scroll-drip 2s ease-in-out infinite;
+}
+@keyframes scroll-drip {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(250%); }
+}
+
+/* ==========================================================================
+   ABOUT SECTION
+   ========================================================================== */
+.about {
+  padding: var(--section-padding) 2rem;
+  background: var(--color-bg-alt);
+}
+
+.about-grid {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 5rem;
+}
+
+.about-bio p {
+  color: var(--color-text-dim);
+  margin-bottom: 1.25rem;
+  max-width: 52ch;
+}
+.about-bio em {
+  color: var(--color-text);
+  font-style: normal;
+  border-bottom: 1px solid var(--color-violet);
+}
+
+.about-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+.stat-num,
+.stat-suffix {
+  display: inline;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--color-cyan);
+}
+.stat-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+  margin-top: 0.25rem;
+}
+
+.skills-heading {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+}
+
+.skill { margin-bottom: 1.5rem; }
+.skill-info {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  margin-bottom: 0.5rem;
+}
+.skill-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-surface);
+  border-radius: 999px;
+  overflow: hidden;
+}
+/* The fill starts at 0 width; script.js sets it to var(--level) once the
+   skill block scrolls into view, which triggers this CSS transition. */
+.skill-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-violet), var(--color-cyan));
+  box-shadow: 0 0 12px var(--color-violet-glow);
+  transition: width 1.4s var(--ease-out);
+}
+.skill-fill.animate { width: var(--level); }
+
+/* ==========================================================================
+   PROJECTS / WORK SECTION
+   ========================================================================== */
+.work {
+  padding: var(--section-padding) 2rem;
+}
+
+.project-grid {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+/* --- The 3D tilt card -----------------------------------------------------
+   We give the grid a perspective, then rotate each card on rotateX/rotateY
+   based on cursor position (calculated in script.js). transform-style:
+   preserve-3d lets the inner glow/content appear to sit on the tilted plane. */
+.project-grid { perspective: 1200px; }
+
+.project-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow var(--transition-med), border-color var(--transition-med);
+  will-change: transform;
+}
+.project-card:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* Radial glow that tracks the cursor, positioned via --mx/--my custom
+   properties set in script.js on mousemove. Sits above the card background
+   but below the text content (z-index order below). */
+.card-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  background: radial-gradient(
+    500px circle at var(--mx, 50%) var(--my, 50%),
+    var(--color-violet-glow),
+    transparent 60%
+  );
+}
+.project-card:hover .card-glow { opacity: 1; }
+
+.card-content {
+  position: relative;
+  z-index: 1;
+  transform: translateZ(40px); /* pops content "forward" in the 3D tilt */
+}
+
+.project-number {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+  margin-bottom: 1rem;
+}
+
+.project-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.project-desc {
+  color: var(--color-text-dim);
+  font-size: 0.92rem;
+  margin-bottom: 1.5rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.project-tags span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-cyan);
+  background: rgba(34, 211, 238, 0.08);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: none;
+}
+.project-link span {
+  transition: transform var(--transition-fast);
+}
+.project-link:hover span {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   CONTACT SECTION
+   ========================================================================== */
+.contact {
+  padding: var(--section-padding) 2rem;
+  background: var(--color-bg-alt);
+}
+
+.contact-form {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.75rem 0;
+  resize: none;
+  outline: none;
+}
+
+/* --- Floating label trick --------------------------------------------------
+   The <input> has placeholder=" " (a single space, not empty). That lets us
+   use :placeholder-shown to detect "field is empty" purely in CSS: when the
+   placeholder IS shown, the field is empty, so the label sits in its resting
+   (large, centered) position. The moment the user types, the placeholder
+   disappears and the label springs up. :focus also forces the "up" state so
+   the label lifts as soon as the field is focused, before typing starts. */
+.form-group label {
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  color: var(--color-text-faint);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label,
+.form-group textarea:focus + label,
+.form-group textarea:not(:placeholder-shown) + label {
+  transform: translateY(-1.4rem) scale(0.82);
+  color: var(--color-cyan);
+}
+
+/* Animated underline: a 2px gradient line that grows from the center
+   outward on focus, layered on top of the default 1px static border. */
+.form-line {
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-violet), var(--color-cyan));
+  box-shadow: 0 0 10px var(--color-violet-glow);
+  transition: width var(--transition-fast), left var(--transition-fast);
+}
+.form-group input:focus ~ .form-line,
+.form-group textarea:focus ~ .form-line {
+  width: 100%;
+  left: 0;
+}
+
+.contact-form .btn-glow {
+  align-self: flex-start;
+  border: none;
+}
+
+.form-status {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-cyan);
+  min-height: 1.2em;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.footer {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 960px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(75vw, 320px);
+    background: rgba(8, 8, 12, 0.97);
+    backdrop-filter: blur(14px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    transform: translateX(100%);
+    transition: transform var(--transition-med);
+    border-left: 1px solid var(--color-border);
+  }
+  .nav-links.is-open { transform: translateX(0); }
+  .nav-toggle { display: flex; }
+
+  .project-grid { grid-template-columns: 1fr; }
+
+  .about-stats { gap: 1.75rem; }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: 2.1rem; }
+  .section-title { font-size: 1.6rem; }
+}

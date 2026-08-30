@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rex Elias — Full-Stack Developer & Creative Coder</title>
+  <meta name="description" content="Portfolio of Rex Elias, a full-stack developer and creative coder building immersive, high-performance web experiences.">
+
+  <!--
+    ==========================================================================
+    FONTS
+    We pair three typefaces, each with one job:
+    - Space Grotesk : the DISPLAY face. Geometric, techy, used for headlines.
+    - Inter         : the BODY face. Neutral and highly legible for paragraphs.
+    - JetBrains Mono: the UTILITY face. Used for labels, tags, and eyebrows
+                      to give the page a "code editor" texture.
+    ==========================================================================
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       CUSTOM CURSOR
+       Two elements: a small solid dot that tracks the mouse instantly, and a
+       larger ring that follows with a spring/lag effect (handled in script.js).
+       We hide the native OS cursor via CSS (cursor: none) and drive these two
+       elements instead. On touch devices these stay hidden (no mouse to track).
+       ========================================================================== -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-outline" id="cursorOutline"></div>
+
+  <!-- ==========================================================================
+       NAVIGATION
+       Fixed glass-morphism bar. Gets a solid/blurred background once the user
+       scrolls past the hero (class toggled in script.js).
+       ========================================================================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#home" class="nav-logo" data-hover>A<span>.</span>K</a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home" class="nav-link" data-hover>Home</a></li>
+        <li><a href="#about" class="nav-link" data-hover>About</a></li>
+        <li><a href="#work" class="nav-link" data-hover>Work</a></li>
+        <li><a href="#contact" class="nav-link" data-hover>Contact</a></li>
+      </ul>
+
+      <!-- Hamburger, becomes visible only on small screens via CSS -->
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       The "thesis" of the page. A canvas renders a slow-drifting field of
+       particles connected by faint lines, rendered with a fake perspective
+       (particles further "back" are smaller/dimmer) to sell a 3D depth
+       illusion using nothing but 2D canvas math. No Three.js needed.
+       ========================================================================== -->
+  <header class="hero" id="home">
+    <canvas id="particleCanvas" class="hero-canvas"></canvas>
+
+    <!-- Soft vignette + grid overlay purely in CSS, sits above the canvas -->
+    <div class="hero-grid-overlay" aria-hidden="true"></div>
+
+    <div class="hero-content reveal">
+      <p class="hero-eyebrow">&lt;/&gt; Full-Stack Developer &amp; Creative Coder</p>
+      <h1 class="hero-title">
+        Building <span class="text-gradient">immersive</span><br>
+        digital experiences.
+      </h1>
+      <p class="hero-subtitle">
+        I design and build interactive, high-performance interfaces that sit
+        somewhere between engineering and art — no bloated frameworks required.
+      </p>
+      <a href="#work" class="btn-glow" data-hover>
+        <span>View My Work</span>
+      </a>
+    </div>
+
+    <div class="scroll-indicator" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-line"><i></i></div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       ABOUT SECTION
+       Split layout: bio copy on the left, animated skill bars on the right.
+       ========================================================================== -->
+  <section class="about" id="about">
+    <div class="section-header reveal">
+      <span class="section-tag">01 — About</span>
+      <h2 class="section-title">The person behind the pixels</h2>
+    </div>
+
+    <div class="about-grid">
+      <!-- Bio column -->
+      <div class="about-bio reveal">
+        <p>
+          I'm a full-stack developer who treats the browser like a canvas.
+          Over the last five years I've shipped products for startups and
+          studios alike, always chasing the same goal: interfaces that feel
+          alive without sacrificing an ounce of performance.
+        </p>
+        <p>
+          My focus lately is on interaction design — the small, tactile
+          details that make a screen feel like it's responding to <em>you</em>
+          specifically. Custom cursors, physics-based motion, 3D perspective
+          tricks in plain CSS. No shortcuts, no heavy frameworks, just a deep
+          respect for the fundamentals.
+        </p>
+
+        <div class="about-stats">
+          <div class="stat">
+            <span class="stat-num" data-count="5">0</span><span class="stat-suffix">+</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" data-count="40">0</span><span class="stat-suffix">+</span>
+            <span class="stat-label">Projects Shipped</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num" data-count="12">0</span><span class="stat-suffix">+</span>
+            <span class="stat-label">Happy Clients</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills column -->
+      <div class="about-skills reveal">
+        <h3 class="skills-heading">Technical Skills</h3>
+
+        <!-- Each .skill block: the fill width is driven by the --level custom
+             property, and animated in via IntersectionObserver in script.js -->
+        <div class="skill">
+          <div class="skill-info"><span>JavaScript (ES6+)</span><span>95%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="--level:95%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-info"><span>CSS3 / Animation</span><span>92%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="--level:92%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-info"><span>React / Node.js</span><span>88%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="--level:88%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-info"><span>WebGL / Three.js</span><span>75%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="--level:75%"></div></div>
+        </div>
+        <div class="skill">
+          <div class="skill-info"><span>UI / UX Design</span><span>85%</span></div>
+          <div class="skill-bar"><div class="skill-fill" style="--level:85%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       PROJECTS / PORTFOLIO GRID
+       Each .project-card gets a live 3D tilt via mousemove in script.js
+       (transform: rotateX/rotateY based on cursor position over the card),
+       plus a radial "glow" that follows the cursor via CSS custom properties.
+       ========================================================================== -->
+  <section class="work" id="work">
+    <div class="section-header reveal">
+      <span class="section-tag">02 — Selected Work</span>
+      <h2 class="section-title">Projects worth showing off</h2>
+    </div>
+
+    <div class="project-grid">
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">01</span>
+          <h3 class="project-title">Nebula Dashboard</h3>
+          <p class="project-desc">A real-time analytics dashboard with animated data visualizations and a fully custom charting engine.</p>
+          <div class="project-tags">
+            <span>React</span><span>D3.js</span><span>WebSocket</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">02</span>
+          <h3 class="project-title">Aurora Commerce</h3>
+          <p class="project-desc">A headless e-commerce storefront focused on sub-second load times and buttery-smooth transitions.</p>
+          <div class="project-tags">
+            <span>Next.js</span><span>Stripe</span><span>GraphQL</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">03</span>
+          <h3 class="project-title">Pulse Studio</h3>
+          <p class="project-desc">An audio-reactive visual playground built with the Web Audio API and hand-written canvas shaders.</p>
+          <div class="project-tags">
+            <span>Canvas</span><span>Web Audio</span><span>JS</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">04</span>
+          <h3 class="project-title">Vertex CRM</h3>
+          <p class="project-desc">An internal tool for a logistics company, rebuilt from scratch to cut task completion time by 40%.</p>
+          <div class="project-tags">
+            <span>Vue</span><span>Node.js</span><span>PostgreSQL</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">05</span>
+          <h3 class="project-title">Orbit Docs</h3>
+          <p class="project-desc">A documentation platform with instant full-text search and a distraction-free reading mode.</p>
+          <div class="project-tags">
+            <span>Svelte</span><span>Rust</span><span>WASM</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="project-card reveal" data-tilt>
+        <div class="card-glow"></div>
+        <div class="card-content">
+          <span class="project-number">06</span>
+          <h3 class="project-title">Halo Fitness</h3>
+          <p class="project-desc">A mobile-first fitness tracker with offline-first data sync and motion-based workout logging.</p>
+          <div class="project-tags">
+            <span>React Native</span><span>SQLite</span><span>PWA</span>
+          </div>
+          <a href="#" class="project-link" data-hover>View Project <span>→</span></a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       CONTACT SECTION
+       Minimalist glowing form with floating labels (pure CSS trick using
+       :placeholder-shown + a non-empty placeholder=" ").
+       ========================================================================== -->
+  <section class="contact" id="contact">
+    <div class="section-header reveal">
+      <span class="section-tag">03 — Contact</span>
+      <h2 class="section-title">Let's build something remarkable</h2>
+    </div>
+
+    <form class="contact-form reveal" id="contactForm" novalidate>
+      <div class="form-group">
+        <input type="text" id="name" name="name" placeholder=" " required autocomplete="name">
+        <label for="name">Your Name</label>
+        <span class="form-line"></span>
+      </div>
+
+      <div class="form-group">
+        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+        <label for="email">Your Email</label>
+        <span class="form-line"></span>
+      </div>
+
+      <div class="form-group">
+        <textarea id="message" name="message" rows="5" placeholder=" " required></textarea>
+        <label for="message">Your Message</label>
+        <span class="form-line"></span>
+      </div>
+
+      <button type="submit" class="btn-glow" data-hover>
+        <span id="submitLabel">Send Message</span>
+      </button>
+
+      <!-- Live-region so status updates are announced to screen readers too -->
+      <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2026 Rex Elias — Crafted with vanilla HTML, CSS &amp; JavaScript.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
